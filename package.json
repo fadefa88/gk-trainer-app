@@ -1,0 +1,30 @@
+{
+  "name": "gk-trainer-app",
+  "version": "1.0.0",
+  "description": "Wrapper iOS Capacitor per GK Trainer su Cloudflare Pages e D1.",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-ios-web.js",
+    "build:ios-web": "node scripts/build-ios-web.js",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync:ios": "npm run build:ios-web && npx cap sync ios",
+    "cap:doctor": "npx cap doctor"
+  },
+  "keywords": [
+    "goalkeeper",
+    "trainer",
+    "portieri",
+    "capacitor",
+    "ios"
+  ],
+  "author": "GK Trainer",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/ios": "^7.4.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.4",
+    "typescript": "^5.8.3"
+  }
+}
