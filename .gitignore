@@ -1,0 +1,12 @@
+node_modules/
+www/
+ios/
+.DS_Store
+.env
+*.log
+
+# Codemagic / Xcode artifacts
+DerivedData/
+build/
+*.ipa
+*.xcarchive
