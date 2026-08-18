@@ -10,6 +10,8 @@ workflows:
     environment:
       node: 20
       xcode: 26.4
+      groups:
+        - certificate_credentials
       vars:
         BUNDLE_ID: uk.lucahome.gktrainer
         XCODE_WORKSPACE: ios/App/App.xcworkspace
@@ -64,7 +66,11 @@ workflows:
 
       - name: Fetch or create App Store signing files
         script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "CERTIFICATE_PRIVATE_KEY is missing. Add it in Codemagic Environment variables, group certificate_credentials."
+            exit 1
+          fi
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
 
       - name: Add certificates to keychain
         script: |
