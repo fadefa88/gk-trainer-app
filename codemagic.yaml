@@ -18,6 +18,7 @@ workflows:
         XCODE_SCHEME: App
         APP_VERSION: 1.0.0
         BUILD_NUMBER_OFFSET: 0
+        IOS_DEPLOYMENT_TARGET: 15.0
 
     triggering:
       events:
@@ -49,9 +50,39 @@ workflows:
             npx cap add ios
           fi
 
+      - name: Set iOS deployment target and export compliance flag
+        script: |
+          echo "Setting iOS deployment target to $IOS_DEPLOYMENT_TARGET"
+          PBXPROJ="ios/App/App.xcodeproj/project.pbxproj"
+          PODFILE="ios/App/Podfile"
+          INFOPLIST="ios/App/App/Info.plist"
+
+          if [ -f "$PBXPROJ" ]; then
+            sed -i '' "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = $IOS_DEPLOYMENT_TARGET;/g" "$PBXPROJ"
+          fi
+
+          if [ -f "$PODFILE" ]; then
+            if grep -q "^platform :ios" "$PODFILE"; then
+              sed -i '' "s/^platform :ios.*/platform :ios, '$IOS_DEPLOYMENT_TARGET'/" "$PODFILE"
+            else
+              printf "platform :ios, '$IOS_DEPLOYMENT_TARGET'\n\n" | cat - "$PODFILE" > /tmp/Podfile && mv /tmp/Podfile "$PODFILE"
+            fi
+          fi
+
+          if [ -f "$INFOPLIST" ]; then
+            /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" "$INFOPLIST" || /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$INFOPLIST"
+          fi
+
       - name: Sync Capacitor iOS project
         script: |
           npx cap sync ios
+
+      - name: Re-apply iOS deployment target after sync
+        script: |
+          PBXPROJ="ios/App/App.xcodeproj/project.pbxproj"
+          if [ -f "$PBXPROJ" ]; then
+            sed -i '' "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = $IOS_DEPLOYMENT_TARGET;/g" "$PBXPROJ"
+          fi
 
       - name: Set app version and build number
         script: |
@@ -59,6 +90,7 @@ workflows:
           echo "Using iOS app version $APP_VERSION build $APP_BUILD_NUMBER"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" ios/App/App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $APP_BUILD_NUMBER" ios/App/App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist || /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
 
       - name: Initialize keychain
         script: |
@@ -116,6 +148,7 @@ workflows:
         XCODE_SCHEME: App
         APP_VERSION: 1.0.0
         BUILD_NUMBER_OFFSET: 0
+        IOS_DEPLOYMENT_TARGET: 15.0
 
     cache:
       cache_paths:
@@ -139,9 +172,39 @@ workflows:
             npx cap add ios
           fi
 
+      - name: Set iOS deployment target and export compliance flag
+        script: |
+          echo "Setting iOS deployment target to $IOS_DEPLOYMENT_TARGET"
+          PBXPROJ="ios/App/App.xcodeproj/project.pbxproj"
+          PODFILE="ios/App/Podfile"
+          INFOPLIST="ios/App/App/Info.plist"
+
+          if [ -f "$PBXPROJ" ]; then
+            sed -i '' "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = $IOS_DEPLOYMENT_TARGET;/g" "$PBXPROJ"
+          fi
+
+          if [ -f "$PODFILE" ]; then
+            if grep -q "^platform :ios" "$PODFILE"; then
+              sed -i '' "s/^platform :ios.*/platform :ios, '$IOS_DEPLOYMENT_TARGET'/" "$PODFILE"
+            else
+              printf "platform :ios, '$IOS_DEPLOYMENT_TARGET'\n\n" | cat - "$PODFILE" > /tmp/Podfile && mv /tmp/Podfile "$PODFILE"
+            fi
+          fi
+
+          if [ -f "$INFOPLIST" ]; then
+            /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" "$INFOPLIST" || /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$INFOPLIST"
+          fi
+
       - name: Sync Capacitor iOS project
         script: |
           npx cap sync ios
+
+      - name: Re-apply iOS deployment target after sync
+        script: |
+          PBXPROJ="ios/App/App.xcodeproj/project.pbxproj"
+          if [ -f "$PBXPROJ" ]; then
+            sed -i '' "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = $IOS_DEPLOYMENT_TARGET;/g" "$PBXPROJ"
+          fi
 
       - name: Set app version and build number
         script: |
@@ -149,6 +212,7 @@ workflows:
           echo "Using iOS app version $APP_VERSION build $APP_BUILD_NUMBER"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" ios/App/App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $APP_BUILD_NUMBER" ios/App/App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist || /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
 
       - name: Initialize keychain
         script: |
